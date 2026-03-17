@@ -1,10 +1,16 @@
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>치과 AX 컨설팅 체크리스트</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font-sans);}
-.root{padding:1rem 0 2rem;}
-.header h1{font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;}
-.header p{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.25rem;}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#fff;}
+.root{padding:1rem 1.5rem 2rem;max-width:960px;margin:0 auto;}
+.header h1{font-size:20px;font-weight:500;color:#1a1a1a;margin-bottom:4px;}
+.header p{font-size:13px;color:#888;margin-bottom:1.25rem;}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem;}
 .stat{background:#E8E6E0;border-radius:8px;padding:12px 14px;}
 .stat-num{font-size:24px;font-weight:500;color:#1a1a1a;}
@@ -78,15 +84,42 @@ body{font-family:var(--font-sans);}
 .note-btn.active{background:#1D9E75;color:#fff;border-color:#1D9E75;}
 .note-row{display:none;border-bottom:1.5px solid #D5D2CB;background:#EAF5F1;}
 .note-row.open{display:block;}
-.note-row textarea{width:100%;font-size:12px;font-family:var(--font-sans);color:#333;background:transparent;border:none;padding:8px 16px 8px 60px;resize:none;height:44px;outline:none;}
-.send-btn{margin-top:1.25rem;padding:11px 20px;font-size:13px;border-radius:8px;border:1.5px solid #B0ADA8;background:#fff;color:#333;cursor:pointer;width:100%;transition:background 0.15s;}
+.note-row textarea{width:100%;font-size:12px;font-family:inherit;color:#333;background:transparent;border:none;padding:8px 16px 8px 60px;resize:none;height:44px;outline:none;}
+.btn-row{display:flex;gap:8px;margin-top:1.25rem;}
+.send-btn{padding:11px 20px;font-size:13px;border-radius:8px;border:1.5px solid #B0ADA8;background:#fff;color:#333;cursor:pointer;flex:1;transition:background 0.15s;}
 .send-btn:hover{background:#F0EDE7;}
-</style>
+.pdf-btn{padding:11px 20px;font-size:13px;border-radius:8px;border:1.5px solid #1D9E75;background:#1D9E75;color:#fff;cursor:pointer;flex:1;transition:background 0.15s;font-weight:500;}
+.pdf-btn:hover{background:#178A66;}
+.edit-hint{font-size:11px;color:#999;margin-top:8px;text-align:center;}
 
-<div class="root">
+/* Editable styles */
+.editable{cursor:text;border-radius:3px;padding:1px 3px;margin:-1px -3px;transition:background 0.15s,box-shadow 0.15s;}
+.editable:hover{background:rgba(29,158,117,0.08);}
+.editable:focus{background:#fff;box-shadow:0 0 0 2px #1D9E75;outline:none;}
+.sec-title .editable{color:#F5F3EE;}
+.sec-title .editable:hover{background:rgba(255,255,255,0.1);}
+.sec-title .editable:focus{background:rgba(255,255,255,0.2);box-shadow:0 0 0 2px rgba(255,255,255,0.4);}
+
+/* PDF mode: show notes inline, hide buttons */
+.pdf-mode .filter-bar,
+.pdf-mode .legend,
+.pdf-mode .btn-row,
+.pdf-mode .edit-hint,
+.pdf-mode .note-btn,
+.pdf-mode .cell-memo{display:none!important;}
+.pdf-mode .note-row.has-note{display:block!important;}
+.pdf-mode .editable{cursor:default;}
+.pdf-mode .editable:hover{background:transparent;}
+.pdf-mode .table-head{grid-template-columns:36px 1fr 210px 88px;}
+.pdf-mode .item{grid-template-columns:36px 1fr 210px 88px;}
+</style>
+</head>
+<body>
+
+<div class="root" id="app-root">
   <div class="header">
-    <h1>치과 AX 컨설팅 체크리스트</h1>
-    <p>항목을 클릭해 체크하고 메모를 남겨보세요</p>
+    <h1 class="editable" contenteditable="true">치과 AX 컨설팅 체크리스트</h1>
+    <p>항목을 클릭해 체크 · 더블클릭으로 제목/설명 수정 · 메모 후 PDF 다운로드</p>
   </div>
   <div class="stats">
     <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">전체 항목</div></div>
@@ -130,7 +163,11 @@ body{font-family:var(--font-sans);}
     <button class="fb-btn" onclick="resetFilters()" style="margin-left:4px;">초기화</button>
   </div>
   <div id="list"></div>
-  <button class="send-btn" onclick="sendSummary()">체크된 항목 요약 → Claude에게 보내기 ↗</button>
+  <div class="btn-row">
+    <button class="send-btn" onclick="sendSummary()">체크된 항목 요약 → Claude에게 보내기 ↗</button>
+    <button class="pdf-btn" onclick="downloadPDF()">📄 PDF 다운로드</button>
+  </div>
+  <div class="edit-hint">💡 카테고리명 · 항목 제목 · 설명을 더블클릭하면 직접 수정할 수 있습니다</div>
 </div>
 
 <script>
@@ -213,8 +250,8 @@ function render(){
     secEl.className="section";
     const head=document.createElement("div");
     head.className="sec-head";
-    head.innerHTML=`<span class="sec-title">${sec.cat}</span><span class="sec-count">${vis.length}개</span><span class="sec-arrow ${isCol?"closed":""}">▼</span>`;
-    head.onclick=()=>{state.collapsed[si]=!state.collapsed[si];render();};
+    head.innerHTML=`<span class="sec-title"><span class="editable" contenteditable="true" data-cat="${si}" onblur="saveCat(${si},this)" onclick="event.stopPropagation()">${sec.cat}</span></span><span class="sec-count">${vis.length}개</span><span class="sec-arrow ${isCol?"closed":""}">▼</span>`;
+    head.onclick=(e)=>{if(e.target.contentEditable==="true")return;state.collapsed[si]=!state.collapsed[si];render();};
     secEl.appendChild(head);
     if(!isCol){
       const thead=document.createElement("div");
@@ -225,21 +262,25 @@ function render(){
         const ii=sec.items.indexOf(it);
         const key=si+"-"+ii;
         const isChecked=state.checked.has(key);
-        const noteOpen=!!state.notes[key];
+        const noteVal=state.notes[key]||"";
+        const noteOpen=noteVal.trim().length>0;
         const row=document.createElement("div");
         row.className="item"+(isChecked?" checked":"");
         row.innerHTML=`
           <div class="cell cell-check"><div class="cb ${isChecked?"on":""}"><svg viewBox="0 0 10 10" class="cb-mark"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div></div>
-          <div class="cell cell-name"><div class="item-name">${it.name}</div><div class="item-desc">${it.desc}</div></div>
+          <div class="cell cell-name">
+            <div class="item-name editable" contenteditable="true" data-field="name" data-si="${si}" data-ii="${ii}" onblur="saveField(this)" onclick="event.stopPropagation()">${it.name}</div>
+            <div class="item-desc editable" contenteditable="true" data-field="desc" data-si="${si}" data-ii="${ii}" onblur="saveField(this)" onclick="event.stopPropagation()">${it.desc}</div>
+          </div>
           <div class="cell cell-tools">${it.tools.map(t=>`<span class="pill ${TOOL_MAP[t].cls}">${TOOL_MAP[t].label}</span>`).join("")}</div>
           <div class="cell cell-diff"><span class="pill ${DIFF_MAP[it.diff].cls}">${DIFF_MAP[it.diff].label}</span></div>
           <div class="cell cell-memo"><button class="note-btn ${noteOpen?"active":""}" onclick="toggleNote(event,'${key}')">${noteOpen?"✓":"+"} 메모</button></div>`;
-        row.onclick=(e)=>{if(e.target.tagName==="BUTTON"||e.target.tagName==="TEXTAREA")return;if(state.checked.has(key))state.checked.delete(key);else state.checked.add(key);render();};
+        row.onclick=(e)=>{if(e.target.contentEditable==="true"||e.target.tagName==="BUTTON"||e.target.tagName==="TEXTAREA")return;if(state.checked.has(key))state.checked.delete(key);else state.checked.add(key);render();};
         secEl.appendChild(row);
         const noteRow=document.createElement("div");
-        noteRow.className="note-row"+(noteOpen?" open":"");
+        noteRow.className="note-row"+(noteOpen?" open":"")+(noteVal.trim()?" has-note":"");
         noteRow.id="note-row-"+key;
-        noteRow.innerHTML=`<textarea placeholder="원장님 반응, 현황, 메모..." onchange="saveNote('${key}',this.value)">${state.notes[key]||""}</textarea>`;
+        noteRow.innerHTML=`<textarea placeholder="원장님 반응, 현황, 메모..." oninput="saveNote('${key}',this.value)">${noteVal.trim()}</textarea>`;
         secEl.appendChild(noteRow);
       });
     }
@@ -250,6 +291,19 @@ function render(){
   document.getElementById("s-easy").textContent=easyC;
   document.getElementById("s-pct").textContent=total>0?Math.round(checkedC/total*100)+"%":"0%";
   buildToolDropdown();
+}
+
+/* Save edits back to DATA */
+function saveField(el){
+  const si=parseInt(el.dataset.si);
+  const ii=parseInt(el.dataset.ii);
+  const field=el.dataset.field;
+  const val=el.textContent.trim();
+  if(val)DATA[si].items[ii][field]=val;
+}
+function saveCat(si,el){
+  const val=el.textContent.trim();
+  if(val)DATA[si].cat=val;
 }
 
 function buildToolDropdown(){
@@ -293,11 +347,71 @@ function resetFilters(){
 }
 function toggleNote(e,key){
   e.stopPropagation();
-  if(!state.notes[key])state.notes[key]=" ";else state.notes[key]="";
-  render();
-  if(state.notes[key])setTimeout(()=>{const el=document.querySelector("#note-row-"+key+" textarea");if(el){el.value="";el.focus();}},30);
+  const noteRow=document.getElementById("note-row-"+key);
+  if(noteRow.classList.contains("open")){
+    noteRow.classList.remove("open");
+    // keep the note value, just close the UI
+  }else{
+    noteRow.classList.add("open");
+    if(!state.notes[key])state.notes[key]="";
+    setTimeout(()=>{const el=noteRow.querySelector("textarea");if(el)el.focus();},30);
+  }
+  // update button state
+  const btn=e.target.closest?e.target:e.target.parentElement;
+  const hasNote=state.notes[key]&&state.notes[key].trim();
+  if(noteRow.classList.contains("open")){
+    btn.classList.add("active");
+    btn.innerHTML="✓ 메모";
+  }else if(!hasNote){
+    btn.classList.remove("active");
+    btn.innerHTML="+ 메모";
+  }
 }
-function saveNote(key,val){state.notes[key]=val;}
+function saveNote(key,val){
+  state.notes[key]=val;
+  const noteRow=document.getElementById("note-row-"+key);
+  if(val.trim()){noteRow.classList.add("has-note");}
+  else{noteRow.classList.remove("has-note");}
+}
+
+/* PDF Download */
+function downloadPDF(){
+  const root=document.getElementById("app-root");
+  // Expand all collapsed sections
+  const prevCollapsed={...state.collapsed};
+  Object.keys(state.collapsed).forEach(k=>state.collapsed[k]=false);
+  render();
+
+  // Add pdf-mode class
+  root.classList.add("pdf-mode");
+
+  // Make all editables non-editable for PDF
+  root.querySelectorAll('[contenteditable]').forEach(el=>el.contentEditable="false");
+
+  // Open all note rows that have content
+  root.querySelectorAll('.note-row.has-note').forEach(el=>el.classList.add("open"));
+
+  const title=root.querySelector('h1').textContent.trim().replace(/[^a-zA-Z0-9가-힣]/g,'_')||'checklist';
+
+  const opt={
+    margin:[10,8,10,8],
+    filename:title+'_'+new Date().toISOString().slice(0,10)+'.pdf',
+    image:{type:'jpeg',quality:0.95},
+    html2canvas:{scale:2,useCORS:true,letterRendering:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['avoid-all','css','legacy']}
+  };
+
+  html2pdf().set(opt).from(root).save().then(()=>{
+    // Restore state
+    root.classList.remove("pdf-mode");
+    root.querySelectorAll('.editable').forEach(el=>el.contentEditable="true");
+    root.querySelector('h1').contentEditable="true";
+    state.collapsed=prevCollapsed;
+    render();
+  });
+}
+
 function sendSummary(){
   const lines=[];
   DATA.forEach((sec,si)=>{
@@ -307,8 +421,23 @@ function sendSummary(){
       ch.forEach(it=>{const ii=sec.items.indexOf(it);const note=state.notes[si+"-"+ii];lines.push(`- ${it.name} (${DIFF_MAP[it.diff].label})${note&&note.trim()?" / 메모: "+note.trim():""}`)});
     }
   });
-  if(lines.length===0){sendPrompt("체크리스트를 아직 선택하지 않았어. 어떤 항목부터 시작하면 좋을지 추천해줘.");return;}
-  sendPrompt("치과 AX 컨설팅 미팅에서 아래 항목들에 관심이 있다고 확인됐어. 빠른 실행 가능한 항목 기준으로 우선순위와 도입 순서를 제안해줘.\n\n"+lines.join("\n"));
+  if(lines.length===0){alert("체크된 항목이 없습니다. 항목을 먼저 체크해주세요.");return;}
+  const text="치과 AX 컨설팅 미팅에서 아래 항목들에 관심이 있다고 확인됐어. 빠른 실행 가능한 항목 기준으로 우선순위와 도입 순서를 제안해줘.\n\n"+lines.join("\n");
+  navigator.clipboard.writeText(text).then(()=>alert("클립보드에 복사되었습니다! Claude에 붙여넣기 하세요.")).catch(()=>{
+    const w=window.open("","_blank");
+    if(w){w.document.write("<pre>"+text+"</pre>");}
+  });
 }
+
+// Prevent Enter key from creating new lines in editable fields
+document.addEventListener("keydown",function(e){
+  if(e.key==="Enter"&&e.target.contentEditable==="true"){
+    e.preventDefault();
+    e.target.blur();
+  }
+});
+
 render();
 </script>
+</body>
+</html>
