@@ -1,0 +1,314 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);}
+.root{padding:1rem 0 2rem;}
+.header h1{font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;}
+.header p{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.25rem;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem;}
+.stat{background:#E8E6E0;border-radius:8px;padding:12px 14px;}
+.stat-num{font-size:24px;font-weight:500;color:#1a1a1a;}
+.stat-label{font-size:11px;color:#666;margin-top:3px;}
+.legend{display:flex;flex-wrap:wrap;gap:6px 10px;margin-bottom:1rem;padding:10px 14px;border-radius:8px;background:#EDEBE5;align-items:center;}
+.leg-label{font-size:11px;color:#666;font-weight:500;}
+.leg-sep{width:1px;height:14px;background:#ccc;margin:0 4px;}
+.pill{font-size:11px;font-weight:500;padding:3px 9px;border-radius:99px;white-space:nowrap;cursor:default;}
+.p-claude{background:#EEEDFE;color:#534AB7;}
+.p-gem{background:#E6F1FB;color:#185FA5;}
+.p-gpt{background:#EAF3DE;color:#3B6D11;}
+.p-n8n{background:#FAEEDA;color:#854F0B;}
+.p-make{background:#E1F5EE;color:#0F6E56;}
+.p-zapier{background:#FAECE7;color:#993C1D;}
+.p-code{background:#FBEAF0;color:#993556;}
+.p-notion{background:#F1EFE8;color:#5F5E5A;}
+.p-sheets{background:#E6F4EA;color:#1E6E3A;}
+.p-appscript{background:#FEF3E0;color:#7A4F00;}
+.d-easy{background:#C0DD97;color:#27500A;}
+.d-mid{background:#FAC775;color:#633806;}
+.d-hard{background:#F7C1C1;color:#501313;}
+.filter-bar{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.fb-label{font-size:12px;color:#888;font-weight:500;}
+.fb-btn{font-size:12px;padding:5px 13px;border-radius:99px;border:1.5px solid #ccc;background:#fff;color:#555;cursor:pointer;transition:all 0.15s;}
+.fb-btn.active-easy{background:#C0DD97;color:#27500A;border-color:#97C459;}
+.fb-btn.active-mid{background:#FAC775;color:#633806;border-color:#EF9F27;}
+.fb-btn.active-hard{background:#F7C1C1;color:#501313;border-color:#F09595;}
+.fb-btn.active-all{background:#444;color:#fff;border-color:#444;}
+.fb-btn.active-checked{background:#1D9E75;color:#fff;border-color:#1D9E75;}
+.fb-btn:hover{border-color:#888;}
+.fb-sep{width:1px;height:20px;background:#ddd;margin:0 4px;}
+.col-dropdown{position:relative;display:inline-block;}
+.dropdown-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1.5px solid #C8C5BE;border-radius:8px;padding:6px;z-index:100;min-width:170px;box-shadow:0 4px 12px rgba(0,0,0,0.12);}
+.dropdown-menu.open{display:block;}
+.dd-item{font-size:12px;padding:5px 10px;border-radius:5px;cursor:pointer;color:#444;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.dd-item:hover{background:#F0EDE7;}
+.dd-item.selected{background:#EDF7F3;color:#1D9E75;font-weight:500;}
+.dd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.section{margin-bottom:12px;border-radius:10px;overflow:hidden;border:1.5px solid #C8C5BE;}
+.sec-head{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:10px 16px;background:#3A3835;cursor:pointer;user-select:none;}
+.sec-title{font-size:13px;font-weight:500;color:#F5F3EE;}
+.sec-count{font-size:12px;color:#999;background:#2A2825;border-radius:99px;padding:1px 9px;}
+.sec-arrow{font-size:11px;color:#999;transition:transform 0.2s;}
+.sec-arrow.closed{transform:rotate(-90deg);}
+.table-head{display:grid;grid-template-columns:36px 1fr 210px 88px 70px;background:#5A5754;border-bottom:2px solid #C8C5BE;}
+.th{font-size:11px;font-weight:500;color:#E0DDD8;padding:8px 12px;letter-spacing:0.05em;text-transform:uppercase;display:flex;align-items:center;}
+.th:not(:last-child){border-right:1.5px solid #6A6764;}
+.item{display:grid;grid-template-columns:36px 1fr 210px 88px 70px;cursor:pointer;transition:background 0.1s;border-bottom:1.5px solid #D5D2CB;}
+.item:last-child{border-bottom:none;}
+.item:nth-child(odd){background:#FAFAF8;}
+.item:nth-child(even){background:#F0EDE7;}
+.item:hover{background:#E8E4DC;}
+.item.checked:nth-child(odd){background:#EDF7F3;}
+.item.checked:nth-child(even){background:#E4F4EE;}
+.item.checked .item-name{color:#888;text-decoration:line-through;text-decoration-color:#aaa;}
+.cell{padding:10px 12px;display:flex;align-items:flex-start;}
+.cell:not(:last-child){border-right:1.5px solid #D5D2CB;}
+.cell-check{justify-content:center;align-items:center;}
+.cell-name{flex-direction:column;gap:3px;}
+.cell-tools{flex-wrap:wrap;gap:4px;align-items:flex-start;}
+.cell-diff{justify-content:center;align-items:center;}
+.cell-memo{justify-content:center;align-items:center;}
+.cb{width:17px;height:17px;border-radius:4px;border:2px solid #B0ADA8;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+.cb.on{background:#1D9E75;border-color:#1D9E75;}
+.cb-mark{width:9px;height:9px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:0;}
+.cb.on .cb-mark{opacity:1;}
+.item-name{font-size:13px;color:#1a1a1a;line-height:1.4;font-weight:500;}
+.item-desc{font-size:11px;color:#666;line-height:1.5;}
+.note-btn{font-size:11px;color:#777;cursor:pointer;background:#E8E5DF;border:1px solid #C8C5BE;border-radius:6px;padding:3px 8px;transition:all 0.12s;}
+.note-btn:hover{background:#D8D5CF;color:#444;}
+.note-btn.active{background:#1D9E75;color:#fff;border-color:#1D9E75;}
+.note-row{display:none;border-bottom:1.5px solid #D5D2CB;background:#EAF5F1;}
+.note-row.open{display:block;}
+.note-row textarea{width:100%;font-size:12px;font-family:var(--font-sans);color:#333;background:transparent;border:none;padding:8px 16px 8px 60px;resize:none;height:44px;outline:none;}
+.send-btn{margin-top:1.25rem;padding:11px 20px;font-size:13px;border-radius:8px;border:1.5px solid #B0ADA8;background:#fff;color:#333;cursor:pointer;width:100%;transition:background 0.15s;}
+.send-btn:hover{background:#F0EDE7;}
+</style>
+
+<div class="root">
+  <div class="header">
+    <h1>치과 AX 컨설팅 체크리스트</h1>
+    <p>항목을 클릭해 체크하고 메모를 남겨보세요</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">전체 항목</div></div>
+    <div class="stat"><div class="stat-num" id="s-checked">0</div><div class="stat-label">체크 완료</div></div>
+    <div class="stat"><div class="stat-num" id="s-easy">0</div><div class="stat-label">빠른 실행 가능</div></div>
+    <div class="stat"><div class="stat-num" id="s-pct">0%</div><div class="stat-label">진행률</div></div>
+  </div>
+  <div class="legend">
+    <span class="leg-label">툴</span>
+    <span class="pill p-claude">Claude Project</span>
+    <span class="pill p-gem">Gems</span>
+    <span class="pill p-gpt">GPTs</span>
+    <span class="pill p-n8n">n8n</span>
+    <span class="pill p-make">Make</span>
+    <span class="pill p-zapier">Zapier</span>
+    <span class="pill p-code">Claude Code</span>
+    <span class="pill p-notion">Notion AI</span>
+    <span class="pill p-sheets">Google Sheets</span>
+    <span class="pill p-appscript">App Script</span>
+    <div class="leg-sep"></div>
+    <span class="leg-label">난이도</span>
+    <span class="pill d-easy">쉬움</span>
+    <span class="pill d-mid">보통</span>
+    <span class="pill d-hard">어려움</span>
+  </div>
+  <div class="filter-bar">
+    <span class="fb-label">보기:</span>
+    <button class="fb-btn active-all" onclick="setMainFilter('all',this)">전체</button>
+    <button class="fb-btn" onclick="setMainFilter('checked',this)">체크된 항목</button>
+    <div class="fb-sep"></div>
+    <span class="fb-label">난이도:</span>
+    <button class="fb-btn" onclick="toggleDiffFilter('easy',this)">쉬움</button>
+    <button class="fb-btn" onclick="toggleDiffFilter('mid',this)">보통</button>
+    <button class="fb-btn" onclick="toggleDiffFilter('hard',this)">어려움</button>
+    <div class="fb-sep"></div>
+    <span class="fb-label">툴:</span>
+    <div class="col-dropdown" id="tool-dd">
+      <button class="fb-btn" id="tool-dd-btn" onclick="toggleDropdown('tool-dd')">툴 선택 ▾</button>
+      <div class="dropdown-menu" id="tool-dd-menu"></div>
+    </div>
+    <button class="fb-btn" onclick="resetFilters()" style="margin-left:4px;">초기화</button>
+  </div>
+  <div id="list"></div>
+  <button class="send-btn" onclick="sendSummary()">체크된 항목 요약 → Claude에게 보내기 ↗</button>
+</div>
+
+<script>
+const DATA=[
+  {cat:"1. 환자 커뮤니케이션 자동화",items:[
+    {name:"예약 확인·리마인드 문자 자동화",desc:"예약 직후 확인 문자, 전날 D-1 리마인드 자동 발송 → 노쇼 감소",tools:["n8n","make"],diff:"easy"},
+    {name:"치료 후 주의사항 안내 자동 발송",desc:"발치·임플란트·교정 조정 후 케어 가이드를 카카오 또는 문자로 자동 전송",tools:["n8n","make"],diff:"easy"},
+    {name:"카카오채널 FAQ 챗봇",desc:"진료시간·비용·주차·예약 등 반복 문의 자동 응답",tools:["claude","n8n"],diff:"easy"},
+    {name:"정기 검진 리콜 자동화",desc:"6개월·1년 주기 검진 대상 자동 추출 후 문자·카카오 발송",tools:["n8n","sheets","appscript"],diff:"mid"},
+    {name:"치료 완료 후 만족도 설문 발송",desc:"치료 완료 후 자동으로 설문 링크 발송, 결과 자동 집계",tools:["n8n","sheets"],diff:"mid"},
+  ]},
+  {cat:"2. 원내 행정·서류 자동화",items:[
+    {name:"문진표·동의서 디지털화",desc:"종이 서류 → 태블릿 전자 서명 시스템, 작성 내용 자동 저장",tools:["sheets","appscript"],diff:"easy"},
+    {name:"진단서·소견서 초안 자동 생성",desc:"증상 키워드 입력 → AI가 서류 초안 작성, 의사 최종 검토",tools:["claude","gpt"],diff:"easy"},
+    {name:"치료 계획서 설명 자료 자동화",desc:"임플란트·교정 등 치료 계획 입력 → 환자 맞춤 설명 문서 생성",tools:["claude","gem"],diff:"easy"},
+    {name:"실손보험 청구 서류 작성 보조",desc:"서류 항목 누락 체크, 작성 가이드, 자주 틀리는 항목 안내",tools:["claude","gpt"],diff:"mid"},
+    {name:"차트 요약 및 다음 방문 준비",desc:"이전 진료 기록 요약 → 다음 방문 시 의사·직원 빠른 파악",tools:["claude","sheets"],diff:"mid"},
+  ]},
+  {cat:"3. 마케팅·SNS 자동화",items:[
+    {name:"SNS 포스팅 초안 자동 생성",desc:"키워드·주제 입력 → 인스타그램·블로그 포스팅 문구 자동 작성",tools:["claude","gem","gpt"],diff:"easy"},
+    {name:"네이버·구글 리뷰 답변 초안",desc:"리뷰 붙여넣기 → 병원 톤에 맞는 감사·답변 초안 즉시 생성",tools:["claude","gpt"],diff:"easy"},
+    {name:"임플란트·교정 사례 카드뉴스 문구",desc:"케이스 정보 입력 → SNS용 전후 사례 콘텐츠 문구 자동화",tools:["claude","gem"],diff:"easy"},
+    {name:"블로그 키워드 SEO 최적화",desc:"네이버 상위 노출 키워드 분석 후 포스팅 구조 자동 제안",tools:["gpt","n8n"],diff:"mid"},
+    {name:"광고 성과 자동 주간 보고서",desc:"네이버·구글 광고 데이터 → 주간 성과 요약 자동 생성 및 카톡 발송",tools:["n8n","sheets","appscript"],diff:"mid"},
+  ]},
+  {cat:"4. 상담·접수 효율화",items:[
+    {name:"임플란트 비용 상담 AI 보조 스크립트",desc:"환자 질문 입력 → 비용·과정·기간 맞춤 상담 가이드 즉시 제공",tools:["claude","gpt"],diff:"easy"},
+    {name:"교정 치료 시뮬레이션 설명 자료",desc:"브라켓·투명교정 비교 설명, 기간·비용 자동 안내 자료 생성",tools:["claude","gem"],diff:"easy"},
+    {name:"홈페이지 AI 상담 챗봇",desc:"홈페이지 방문자 실시간 질문 응답, 예약 유도",tools:["claude","code"],diff:"mid"},
+    {name:"온라인 예약 → 내부 접수 자동 연동",desc:"네이버예약·홈페이지 예약 → 내부 시스템 자동 입력, 담당자 알림",tools:["n8n","appscript","sheets"],diff:"mid"},
+  ]},
+  {cat:"5. 직원 업무 효율화",items:[
+    {name:"인수인계 문서 자동 생성",desc:"당일 특이사항 텍스트 입력 → 정리된 인수인계 노트 자동 작성",tools:["claude","notion","sheets"],diff:"easy"},
+    {name:"신규 직원 온보딩 자료 자동화",desc:"직군별 교육 자료·체크리스트 AI 생성, Notion으로 관리",tools:["claude","notion"],diff:"easy"},
+    {name:"치료 프로토콜 문서화",desc:"구두로만 전달되던 치료 절차 → 표준 문서·SOP 자동 정리",tools:["claude","notion","sheets"],diff:"easy"},
+    {name:"진료 스케줄 최적화 분석",desc:"의사·진료실 배치 기반 스케줄 최적화, 대기 시간 단축 제안",tools:["sheets","appscript","code"],diff:"hard"},
+  ]},
+  {cat:"6. 데이터·경영 보고",items:[
+    {name:"일·주간 매출 자동 집계 및 카톡 보고",desc:"청구 데이터 자동 집계 → 원장 카카오로 요약 보고",tools:["sheets","appscript","n8n"],diff:"mid"},
+    {name:"치료 항목별 수익성 분석",desc:"임플란트·교정·일반치료별 마진·회전율 비교 대시보드",tools:["sheets","appscript"],diff:"mid"},
+    {name:"환자 재방문율·이탈 분석",desc:"내원 데이터 → 재방문율 추적, 이탈 환자 패턴 분석",tools:["sheets","appscript","n8n"],diff:"hard"},
+    {name:"월간 경영 보고서 자동 생성",desc:"매출·환자수·치료별 통계 → 원장 보고용 요약 문서 자동 생성",tools:["sheets","appscript","claude"],diff:"mid"},
+  ]},
+];
+
+const TOOL_MAP={
+  claude:{label:"Claude Project",cls:"p-claude",dot:"#534AB7"},
+  gem:{label:"Gems",cls:"p-gem",dot:"#185FA5"},
+  gpt:{label:"GPTs",cls:"p-gpt",dot:"#3B6D11"},
+  n8n:{label:"n8n",cls:"p-n8n",dot:"#854F0B"},
+  make:{label:"Make",cls:"p-make",dot:"#0F6E56"},
+  zapier:{label:"Zapier",cls:"p-zapier",dot:"#993C1D"},
+  code:{label:"Claude Code",cls:"p-code",dot:"#993556"},
+  notion:{label:"Notion AI",cls:"p-notion",dot:"#5F5E5A"},
+  sheets:{label:"Google Sheets",cls:"p-sheets",dot:"#1E6E3A"},
+  appscript:{label:"App Script",cls:"p-appscript",dot:"#7A4F00"},
+};
+const DIFF_MAP={easy:{label:"쉬움",cls:"d-easy"},mid:{label:"보통",cls:"d-mid"},hard:{label:"어려움",cls:"d-hard"}};
+const state={checked:new Set(),notes:{},mainFilter:"all",diffFilters:new Set(),toolFilters:new Set(),collapsed:{}};
+
+function passesFilter(it,si,ii){
+  const key=si+"-"+ii;
+  if(state.mainFilter==="checked"&&!state.checked.has(key))return false;
+  if(state.diffFilters.size>0&&!state.diffFilters.has(it.diff))return false;
+  if(state.toolFilters.size>0&&!it.tools.some(t=>state.toolFilters.has(t)))return false;
+  return true;
+}
+
+function render(){
+  const list=document.getElementById("list");
+  list.innerHTML="";
+  let total=0,checkedC=0,easyC=0;
+  DATA.forEach((sec,si)=>{
+    total+=sec.items.length;
+    sec.items.forEach((it,ii)=>{if(state.checked.has(si+"-"+ii))checkedC++;if(it.diff==="easy")easyC++;});
+    const vis=sec.items.filter((it,ii)=>passesFilter(it,si,ii));
+    if(vis.length===0)return;
+    const isCol=state.collapsed[si]||false;
+    const secEl=document.createElement("div");
+    secEl.className="section";
+    const head=document.createElement("div");
+    head.className="sec-head";
+    head.innerHTML=`<span class="sec-title">${sec.cat}</span><span class="sec-count">${vis.length}개</span><span class="sec-arrow ${isCol?"closed":""}">▼</span>`;
+    head.onclick=()=>{state.collapsed[si]=!state.collapsed[si];render();};
+    secEl.appendChild(head);
+    if(!isCol){
+      const thead=document.createElement("div");
+      thead.className="table-head";
+      thead.innerHTML=`<div class="th"></div><div class="th">항목</div><div class="th">구현 툴</div><div class="th" style="justify-content:center;">난이도</div><div class="th" style="justify-content:center;">메모</div>`;
+      secEl.appendChild(thead);
+      vis.forEach(it=>{
+        const ii=sec.items.indexOf(it);
+        const key=si+"-"+ii;
+        const isChecked=state.checked.has(key);
+        const noteOpen=!!state.notes[key];
+        const row=document.createElement("div");
+        row.className="item"+(isChecked?" checked":"");
+        row.innerHTML=`
+          <div class="cell cell-check"><div class="cb ${isChecked?"on":""}"><svg viewBox="0 0 10 10" class="cb-mark"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div></div>
+          <div class="cell cell-name"><div class="item-name">${it.name}</div><div class="item-desc">${it.desc}</div></div>
+          <div class="cell cell-tools">${it.tools.map(t=>`<span class="pill ${TOOL_MAP[t].cls}">${TOOL_MAP[t].label}</span>`).join("")}</div>
+          <div class="cell cell-diff"><span class="pill ${DIFF_MAP[it.diff].cls}">${DIFF_MAP[it.diff].label}</span></div>
+          <div class="cell cell-memo"><button class="note-btn ${noteOpen?"active":""}" onclick="toggleNote(event,'${key}')">${noteOpen?"✓":"+"} 메모</button></div>`;
+        row.onclick=(e)=>{if(e.target.tagName==="BUTTON"||e.target.tagName==="TEXTAREA")return;if(state.checked.has(key))state.checked.delete(key);else state.checked.add(key);render();};
+        secEl.appendChild(row);
+        const noteRow=document.createElement("div");
+        noteRow.className="note-row"+(noteOpen?" open":"");
+        noteRow.id="note-row-"+key;
+        noteRow.innerHTML=`<textarea placeholder="원장님 반응, 현황, 메모..." onchange="saveNote('${key}',this.value)">${state.notes[key]||""}</textarea>`;
+        secEl.appendChild(noteRow);
+      });
+    }
+    list.appendChild(secEl);
+  });
+  document.getElementById("s-total").textContent=total;
+  document.getElementById("s-checked").textContent=checkedC;
+  document.getElementById("s-easy").textContent=easyC;
+  document.getElementById("s-pct").textContent=total>0?Math.round(checkedC/total*100)+"%":"0%";
+  buildToolDropdown();
+}
+
+function buildToolDropdown(){
+  const menu=document.getElementById("tool-dd-menu");
+  const btn=document.getElementById("tool-dd-btn");
+  menu.innerHTML=`<div class="dd-item ${state.toolFilters.size===0?"selected":""}" onclick="clearToolFilter()"><div class="dd-dot" style="background:#888;"></div>전체 툴 보기</div>`;
+  Object.keys(TOOL_MAP).forEach(t=>{
+    const sel=state.toolFilters.has(t);
+    const d=document.createElement("div");
+    d.className="dd-item"+(sel?" selected":"");
+    d.innerHTML=`<div class="dd-dot" style="background:${TOOL_MAP[t].dot};"></div>${TOOL_MAP[t].label}`;
+    d.onclick=(e)=>{e.stopPropagation();if(state.toolFilters.has(t))state.toolFilters.delete(t);else state.toolFilters.add(t);render();menu.classList.add("open");};
+    menu.appendChild(d);
+  });
+  const active=state.toolFilters.size>0;
+  btn.textContent=active?`툴 (${state.toolFilters.size}개) ▾`:"툴 선택 ▾";
+  btn.style.background=active?"#185FA5":"";
+  btn.style.color=active?"#fff":"";
+  btn.style.borderColor=active?"#185FA5":"";
+}
+
+function toggleDropdown(id){document.getElementById(id+"-menu").classList.toggle("open");}
+document.addEventListener("click",e=>{if(!e.target.closest(".col-dropdown"))document.querySelectorAll(".dropdown-menu").forEach(m=>m.classList.remove("open"));});
+function clearToolFilter(){state.toolFilters.clear();render();}
+function setMainFilter(f,btn){
+  state.mainFilter=f;
+  document.querySelectorAll(".filter-bar .fb-btn").forEach(b=>b.classList.remove("active-all","active-checked"));
+  btn.classList.add(f==="all"?"active-all":"active-checked");
+  render();
+}
+function toggleDiffFilter(d,btn){
+  if(state.diffFilters.has(d)){state.diffFilters.delete(d);btn.classList.remove("active-easy","active-mid","active-hard");}
+  else{state.diffFilters.add(d);btn.classList.add(d==="easy"?"active-easy":d==="mid"?"active-mid":"active-hard");}
+  render();
+}
+function resetFilters(){
+  state.mainFilter="all";state.diffFilters.clear();state.toolFilters.clear();
+  document.querySelectorAll(".filter-bar .fb-btn").forEach(b=>b.classList.remove("active-all","active-checked","active-easy","active-mid","active-hard"));
+  document.querySelector(".filter-bar .fb-btn").classList.add("active-all");
+  render();
+}
+function toggleNote(e,key){
+  e.stopPropagation();
+  if(!state.notes[key])state.notes[key]=" ";else state.notes[key]="";
+  render();
+  if(state.notes[key])setTimeout(()=>{const el=document.querySelector("#note-row-"+key+" textarea");if(el){el.value="";el.focus();}},30);
+}
+function saveNote(key,val){state.notes[key]=val;}
+function sendSummary(){
+  const lines=[];
+  DATA.forEach((sec,si)=>{
+    const ch=sec.items.filter((_,ii)=>state.checked.has(si+"-"+ii));
+    if(ch.length>0){
+      lines.push(`[${sec.cat}]`);
+      ch.forEach(it=>{const ii=sec.items.indexOf(it);const note=state.notes[si+"-"+ii];lines.push(`- ${it.name} (${DIFF_MAP[it.diff].label})${note&&note.trim()?" / 메모: "+note.trim():""}`)});
+    }
+  });
+  if(lines.length===0){sendPrompt("체크리스트를 아직 선택하지 않았어. 어떤 항목부터 시작하면 좋을지 추천해줘.");return;}
+  sendPrompt("치과 AX 컨설팅 미팅에서 아래 항목들에 관심이 있다고 확인됐어. 빠른 실행 가능한 항목 기준으로 우선순위와 도입 순서를 제안해줘.\n\n"+lines.join("\n"));
+}
+render();
+</script>
