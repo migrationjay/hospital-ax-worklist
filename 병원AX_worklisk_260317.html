@@ -101,6 +101,67 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#ff
 .sec-title .editable:hover{background:rgba(255,255,255,0.1);}
 .sec-title .editable:focus{background:rgba(255,255,255,0.2);box-shadow:0 0 0 2px rgba(255,255,255,0.4);}
 
+/* ===== RESPONSIVE ===== */
+@media(max-width:700px){
+  .root{padding:12px 10px 24px;}
+  .header h1{font-size:17px;}
+  .header p{font-size:12px;}
+
+  /* Stats 2x2 */
+  .stats{grid-template-columns:repeat(2,1fr);gap:6px;}
+  .stat{padding:10px 12px;}
+  .stat-num{font-size:20px;}
+
+  /* Legend scroll */
+  .legend{overflow-x:auto;flex-wrap:nowrap;gap:5px 8px;padding:8px 10px;-webkit-overflow-scrolling:touch;}
+  .legend::-webkit-scrollbar{display:none;}
+
+  /* Filter bar wrap */
+  .filter-bar{gap:5px;}
+  .fb-btn{font-size:11px;padding:6px 11px;}
+  .fb-sep{display:none;}
+
+  /* Hide table header on mobile */
+  .table-head{display:none!important;}
+
+  /* Card layout for items */
+  .item{
+    display:flex!important;flex-direction:column;gap:0;
+    padding:10px 12px;position:relative;
+    grid-template-columns:none!important;
+  }
+  .cell{border-right:none!important;padding:0;}
+  .cell-check{position:absolute;top:12px;right:12px;}
+  .cell-name{padding-right:36px;}
+  .item-name{font-size:14px;}
+  .item-desc{font-size:12px;margin-top:2px;}
+  .cell-tools{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;}
+  .cell-diff{margin-top:6px;}
+  .cell-memo{margin-top:8px;justify-content:flex-start;}
+
+  /* Note row */
+  .note-row textarea{padding:8px 12px;font-size:13px;height:50px;}
+
+  /* Buttons */
+  .btn-row{flex-direction:column;gap:6px;}
+  .send-btn,.pdf-btn{padding:13px 16px;font-size:14px;}
+
+  /* Section head */
+  .sec-head{padding:10px 12px;}
+  .sec-title{font-size:13px;}
+
+  /* Dropdown */
+  .dropdown-menu{right:0;left:auto;}
+}
+
+@media(max-width:400px){
+  .stats{grid-template-columns:1fr 1fr;gap:5px;}
+  .stat-num{font-size:18px;}
+  .pill{font-size:10px;padding:2px 7px;}
+  .item-name{font-size:13px;}
+  .item-desc{font-size:11px;}
+}
+
 /* PDF mode: show notes inline, hide buttons */
 .pdf-mode .filter-bar,
 .pdf-mode .legend,
